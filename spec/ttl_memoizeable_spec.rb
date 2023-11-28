@@ -280,7 +280,7 @@ RSpec.describe TTLMemoizeable do
       end
     end
 
-    it "raises when one of the method names is alread defined" do
+    it "raises when one of the method names is already defined" do
       expect { invalid_ttl_klass.bar }.to raise_error(described_class::TTLMemoizationError)
     end
   end
