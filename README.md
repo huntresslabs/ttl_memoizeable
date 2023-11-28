@@ -99,6 +99,8 @@ ttl_memoized:  0.008847   0.000755   0.009602 (  0.221783)
 2. Use this library on methods that accept parameters, as that introduces state; see above
 
 
+## How to use
+
 Using this library is most effective on class methods.
 
 ```ruby
