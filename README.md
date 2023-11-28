@@ -81,15 +81,16 @@ ttl_memoized:  0.008847   0.000755   0.009602 (  0.221783)
 
 ### TTL Types:
   Two methods of TTL expiration are available
-    1. Time Duration (i.e `5.minutes`). This will ensure the process will cache your method
-       for that given amount of time. This option is likely best when you can quantify the
-       acceptable threshold for stale data. Every time the memoized method is called, the date
-       the current memoized value was fetched + your ttl value will be compared to the current time.
 
-    2. Accessor count (i.e. 10_000). This will ensure the process will cache your method
-       for that number of attempts to access the data. This option is likely best when you
-       want to TTL to expire based of volume. Every time the memoized method is called, the counter
-       will decrement by 1.
+  1. Time Duration (i.e `5.minutes`). This will ensure the process will cache your method
+     for that given amount of time. This option is likely best when you can quantify the
+     acceptable threshold for stale data. Every time the memoized method is called, the date
+     the current memoized value was fetched + your ttl value will be compared to the current time.
+
+  2. Accessor count (i.e. 10_000). This will ensure the process will cache your method
+     for that number of attempts to access the data. This option is likely best when you
+     want to TTL to expire based of volume. Every time the memoized method is called, the counter
+     will decrement by 1.
 
 
 ### Dont's
