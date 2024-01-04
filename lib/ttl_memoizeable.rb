@@ -7,6 +7,7 @@ require_relative "ttl_memoizeable/version"
 
 module TTLMemoizeable
   TTLMemoizationError = Class.new(StandardError)
+  SetupMutex = Mutex.new
 
   def ttl_memoized_method(method_name, ttl: 1000)
     raise TTLMemoizationError, "Method not defined: #{method_name}" unless method_defined?(method_name) || private_method_defined?(method_name)
@@ -44,8 +45,12 @@ module TTLMemoizeable
       end
 
       define_method setup_memoization_method_name do
-        instance_variable_set(ttl_variable_name, expired_ttl) unless instance_variable_defined?(ttl_variable_name)
-        instance_variable_set(mutex_variable_name, Mutex.new) unless instance_variable_defined?(mutex_variable_name)
+        return if instance_variable_defined?(ttl_variable_name) && instance_variable_defined?(mutex_variable_name)
+
+        ::TTLMemoizeable::SetupMutex.synchronize do
+          instance_variable_set(ttl_variable_name, expired_ttl) unless instance_variable_defined?(ttl_variable_name)
+          instance_variable_set(mutex_variable_name, Mutex.new) unless instance_variable_defined?(mutex_variable_name)
+        end
       end
 
       define_method decrement_ttl_method_name do
