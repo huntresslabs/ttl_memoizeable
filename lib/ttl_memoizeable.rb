@@ -45,10 +45,11 @@ module TTLMemoizeable
       end
 
       define_method setup_memoization_method_name do
+        return if instance_variable_defined?(ttl_variable_name) && instance_variable_defined?(mutex_variable_name)
+
         ::TTLMemoizeable::SetupMutex.synchronize do
           instance_variable_set(ttl_variable_name, expired_ttl) unless instance_variable_defined?(ttl_variable_name)
           instance_variable_set(mutex_variable_name, Mutex.new) unless instance_variable_defined?(mutex_variable_name)
-          instance_variable_set(value_variable_name, nil) unless instance_variable_defined?(value_variable_name)
         end
       end
 
