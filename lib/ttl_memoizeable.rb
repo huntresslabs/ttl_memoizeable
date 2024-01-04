@@ -15,15 +15,15 @@ module TTLMemoizeable
     time_based_ttl = ttl.is_a?(ActiveSupport::Duration)
     expired_ttl = time_based_ttl ? 1.year.ago : 1
 
-    ttl_variable_name = "@_ttl_for_#{ivar_name}".to_sym
-    mutex_variable_name = "@_mutex_for_#{ivar_name}".to_sym
-    value_variable_name = "@_value_for_#{ivar_name}".to_sym
+    ttl_variable_name = :"@_ttl_for_#{ivar_name}"
+    mutex_variable_name = :"@_mutex_for_#{ivar_name}"
+    value_variable_name = :"@_value_for_#{ivar_name}"
 
-    reset_memoized_value_method_name = "reset_memoized_value_for_#{method_name}".to_sym
-    setup_memoization_method_name = "_setup_memoization_for_#{method_name}".to_sym
-    decrement_ttl_method_name = "_decrement_ttl_for_#{method_name}".to_sym
-    ttl_exceeded_method_name = "_ttl_exceeded_for_#{method_name}".to_sym
-    extend_ttl_method_name = "_extend_ttl_for_#{method_name}".to_sym
+    reset_memoized_value_method_name = :"reset_memoized_value_for_#{method_name}"
+    setup_memoization_method_name = :"_setup_memoization_for_#{method_name}"
+    decrement_ttl_method_name = :"_decrement_ttl_for_#{method_name}"
+    ttl_exceeded_method_name = :"_ttl_exceeded_for_#{method_name}"
+    extend_ttl_method_name = :"_extend_ttl_for_#{method_name}"
 
     [
       reset_memoized_value_method_name, setup_memoization_method_name,
