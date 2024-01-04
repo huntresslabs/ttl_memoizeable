@@ -59,11 +59,10 @@ module TTLMemoizeable
       end
 
       define_method ttl_exceeded_method_name do
-        instance_variable_get(ttl_variable_name) <= if time_based_ttl
-          ttl.ago
-        else
-          0
-        end
+        return true unless instance_variable_defined?(value_variable_name)
+
+        compared_to = time_based_ttl ? ttl.ago : 0
+        instance_variable_get(ttl_variable_name) <= compared_to
       end
 
       define_method extend_ttl_method_name do

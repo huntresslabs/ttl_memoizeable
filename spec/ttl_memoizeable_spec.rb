@@ -153,7 +153,7 @@ RSpec.describe TTLMemoizeable do
 
   describe "#_setup_memoization_for_method" do
     let(:variables) do
-      [:@_ttl_for_bar, :@_mutex_for_bar, :@_value_for_bar]
+      [:@_ttl_for_bar, :@_mutex_for_bar]
     end
 
     it "sets instance variables" do
@@ -204,19 +204,27 @@ RSpec.describe TTLMemoizeable do
 
     before { Klass.bar }
 
-    context "time based ttl" do
-      let(:klass) { time_ttl_klass }
+    context "value variable has been set" do
+      context "time based ttl" do
+        let(:klass) { time_ttl_klass }
 
-      before { travel_to Time.current + fast_forward_time }
+        before { travel_to Time.current + fast_forward_time }
 
-      context "ttl hasn't been exceeded" do
-        let(:fast_forward_time) { 59.minutes }
+        context "ttl hasn't been exceeded" do
+          let(:fast_forward_time) { 59.minutes }
 
-        it { is_expected.to eq(false) }
+          it { is_expected.to eq(false) }
+        end
+
+        context "ttl has been exceeded" do
+          let(:fast_forward_time) { 60.minutes }
+
+          it { is_expected.to eq(true) }
+        end
       end
 
-      context "ttl has been exceeded" do
-        let(:fast_forward_time) { 60.minutes }
+      context "value variable has not been set" do
+        before { Klass.remove_instance_variable(:@_value_for_bar) }
 
         it { is_expected.to eq(true) }
       end
