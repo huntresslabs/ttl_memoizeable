@@ -7,4 +7,4 @@ gemspec
 
 gem "rake"
 gem "rspec"
-gem "standard"
+gem "standard", "1.40.0"
