@@ -123,9 +123,10 @@ RSpec.describe TTLMemoizeable do
       let(:instance) { Klass.new }
 
       it "only calls #expensive_bar twice" do
+        instance.reset_memoized_value_for_foo
         expect(instance).to receive(:expensive_foo).and_call_original.twice
 
-        31.times do
+        32.times do
           expect(instance.foo).to eq(2)
           travel_to Time.current + 1.minute
         end
@@ -217,7 +218,7 @@ RSpec.describe TTLMemoizeable do
         end
 
         context "ttl has been exceeded" do
-          let(:fast_forward_time) { 60.minutes }
+          let(:fast_forward_time) { 61.minutes }
 
           it { is_expected.to eq(true) }
         end
@@ -252,7 +253,10 @@ RSpec.describe TTLMemoizeable do
   describe "#_extend_method_ttl" do
     subject { Klass._extend_ttl_for_bar }
 
-    before { Klass.bar }
+    before do
+      freeze_time
+      Klass.bar
+    end
 
     context "time based ttl" do
       let(:klass) { time_ttl_klass }
