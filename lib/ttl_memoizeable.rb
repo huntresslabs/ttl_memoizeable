@@ -9,6 +9,16 @@ module TTLMemoizeable
   TTLMemoizationError = Class.new(StandardError)
   SetupMutex = Mutex.new
 
+  @disabled = false
+
+  def self.disable!
+    @disabled = true
+  end
+
+  def self.enable!
+    @disabled = false
+  end
+
   def ttl_memoized_method(method_name, ttl: 1000)
     raise TTLMemoizationError, "Method not defined: #{method_name}" unless method_defined?(method_name) || private_method_defined?(method_name)
 
@@ -60,6 +70,7 @@ module TTLMemoizeable
       end
 
       define_method ttl_exceeded_method_name do
+        return true if TTLMemoizeable.instance_variable_get(:@disabled)
         return true unless instance_variable_defined?(value_variable_name)
 
         compared_to = time_based_ttl ? ttl.ago : 0

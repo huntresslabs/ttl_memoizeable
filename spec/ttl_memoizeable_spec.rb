@@ -2,6 +2,7 @@
 
 RSpec.describe TTLMemoizeable do
   before { stub_const("Klass", klass) if klass }
+  after { described_class.enable! }
 
   let(:klass) { integer_ttl_klass }
 
@@ -328,6 +329,40 @@ RSpec.describe TTLMemoizeable do
           expect(Klass.bar).to eq(1)
         end
       end.each(&:join)
+    end
+  end
+
+  describe ".disable!" do
+    context "it bypasses the cached value" do
+      let(:klass) { integer_ttl_klass }
+
+      before { described_class.disable! }
+
+      it "only calls #expensive_bar twice" do
+        expect(Klass).to receive(:expensive_bar).and_call_original.exactly(11)
+
+        11.times do
+          expect(Klass.bar).to eq(1)
+        end
+      end
+    end
+  end
+
+  describe ".enable!" do
+    context "it bypasses the cached value" do
+      let(:klass) { integer_ttl_klass }
+
+      it "only calls #expensive_bar once" do
+        expect(Klass).to receive(:expensive_bar).and_call_original.once
+
+        described_class.disable!
+        Klass.bar
+        described_class.enable!
+
+        3.times do
+          expect(Klass.bar).to eq(1)
+        end
+      end
     end
   end
 end
