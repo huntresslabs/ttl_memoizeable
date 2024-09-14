@@ -151,7 +151,7 @@ application_config.config # => {...} Redis/JSON.parse will be called
 
 ## Testing a TTLMemoized Method
 
-You likely don't want to test the implementation of this library, but the logic of your memoized method. In that case you probably want "fresh" data on every invocation of the method. There are two approaches, depending on your preference of flavor.
+You likely don't want to test the implementation of this library, but the logic of your memoized method. In that case you probably want "fresh" data on every invocation of the method. There are a few approaches, depending on your preference of flavor.
 
 1. Use the reset method provided for you. It follows the pattern of `reset_memoized_value_for_#{method_name}`. Note that this will only reset the value for the current thread, and shouldn't be used to try and create consistent data state across processes.
 ```ruby
@@ -162,7 +162,13 @@ def test_config
 end
 ```
 
-2. Conditionally TTL memoize the method based on test environment or some other condition.
+2. Disable ttl memoization globally in your tests. This will prevent a memoized value from ever being returned.
+
+```ruby
+TTLMemoizeable.disable!
+```
+
+3. Conditionally TTL memoize the method based on test environment or some other condition.
 ```ruby
 def config
   JSON.parse($redis.get("some_big_json_string"))
