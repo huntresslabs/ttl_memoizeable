@@ -15,10 +15,6 @@ module TTLMemoizeable
     @disabled = true
   end
 
-  def self.enable!
-    @disabled = false
-  end
-
   def ttl_memoized_method(method_name, ttl: 1000)
     raise TTLMemoizationError, "Method not defined: #{method_name}" unless method_defined?(method_name) || private_method_defined?(method_name)
 
