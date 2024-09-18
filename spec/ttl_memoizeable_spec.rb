@@ -347,4 +347,28 @@ RSpec.describe TTLMemoizeable do
       end
     end
   end
+
+  describe ".reset!" do
+    context "expires all ttls" do
+      let(:klass) { integer_ttl_klass }
+
+      it "only calls #expensive_bar twice" do
+        expect(Klass).to receive(:expensive_bar).and_call_original.exactly(3)
+
+        expect(Klass.bar).to eq(1) # first expensive_bar
+
+        described_class.reset!
+        expect(Klass.bar).to eq(1) # second expensive_bar
+        2.times do
+          expect(Klass.bar).to eq(1)
+        end
+
+        described_class.reset!
+        expect(Klass.bar).to eq(1) # third expensive_bar
+        8.times do
+          expect(Klass.bar).to eq(1)
+        end
+      end
+    end
+  end
 end

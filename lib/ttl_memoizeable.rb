@@ -9,10 +9,15 @@ module TTLMemoizeable
   TTLMemoizationError = Class.new(StandardError)
   SetupMutex = Mutex.new
 
+  @ttl_index = 0
   @disabled = false
 
   def self.disable!
     @disabled = true
+  end
+
+  def self.reset!
+    @ttl_index += 1
   end
 
   def ttl_memoized_method(method_name, ttl: 1000)
@@ -23,6 +28,7 @@ module TTLMemoizeable
     expired_ttl = time_based_ttl ? 1.year.ago : 1
 
     ttl_variable_name = :"@_ttl_for_#{ivar_name}"
+    ttl_index_variable_name = :"@_ttl_index_for_#{ivar_name}"
     mutex_variable_name = :"@_mutex_for_#{ivar_name}"
     value_variable_name = :"@_value_for_#{ivar_name}"
 
@@ -67,6 +73,7 @@ module TTLMemoizeable
 
       define_method ttl_exceeded_method_name do
         return true if TTLMemoizeable.instance_variable_get(:@disabled)
+        return true if TTLMemoizeable.instance_variable_get(:@ttl_index) != instance_variable_get(ttl_index_variable_name)
         return true unless instance_variable_defined?(value_variable_name)
 
         compared_to = time_based_ttl ? ttl.ago : 0
@@ -91,6 +98,9 @@ module TTLMemoizeable
 
           if send(ttl_exceeded_method_name)
             send(extend_ttl_method_name)
+
+            # Synchronize the ttl index to match the module's value
+            instance_variable_set(ttl_index_variable_name, TTLMemoizeable.instance_variable_get(:@ttl_index))
 
             # Refresh value from the original method
             instance_variable_set(value_variable_name, super())
