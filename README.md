@@ -168,7 +168,25 @@ end
 TTLMemoizeable.disable!
 ```
 
-3. Conditionally TTL memoize the method based on test environment or some other condition.
+3. Reset ttl memoization values before/after your test runs.
+
+```ruby
+# RSpec
+RSpec.configure do |config|
+  config.around { TTLMemoizeable.reset!; _1.run; TTLMemoizeable.reset! }
+end
+
+# minitest
+def setup
+  TTLMemoizeable.reset!
+end
+
+def teardown
+  TTLMemoizeable.reset!
+end
+```
+
+4. Conditionally TTL memoize the method based on test environment or some other condition.
 ```ruby
 def config
   JSON.parse($redis.get("some_big_json_string"))
