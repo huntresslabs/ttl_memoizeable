@@ -26,7 +26,7 @@ module TTLMemoizeable
 
     ivar_name = method_name.to_s.gsub(/\??/, "") # remove trailing question marks
     time_based_ttl = ttl.is_a?(ActiveSupport::Duration)
-    ttl_seconds = ttl.to_f
+    ttl_seconds = ttl.to_f if time_based_ttl
     expired_ttl = time_based_ttl ? EXPIRED_MONOTONIC_TIME : 1
 
     ttl_variable_name = :"@_ttl_for_#{ivar_name}"
