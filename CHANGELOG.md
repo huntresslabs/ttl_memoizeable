@@ -1,4 +1,6 @@
 ## [Unreleased]
+## [0.4.1] - 2026-09-25
+- Calculate TTL using monotonic time, which is much more performant (#16) @kbennoune
 ## [0.4.0] - 2024-09-18
 - Add support for globally disabling TTLMemoizeable (#15) @danielwestendorf
 - Add support for globally resetting all ttls (#13) @danielwestendorf
