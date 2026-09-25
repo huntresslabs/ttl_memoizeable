@@ -8,6 +8,7 @@ require_relative "ttl_memoizeable/version"
 module TTLMemoizeable
   TTLMemoizationError = Class.new(StandardError)
   SetupMutex = Mutex.new
+  EXPIRED_MONOTONIC_TIME = -365.0 * 24 * 60 * 60 # one year before the monotonic clock origin
 
   @ttl_index = 0
   @disabled = false
@@ -25,7 +26,8 @@ module TTLMemoizeable
 
     ivar_name = method_name.to_s.gsub(/\??/, "") # remove trailing question marks
     time_based_ttl = ttl.is_a?(ActiveSupport::Duration)
-    expired_ttl = time_based_ttl ? 1.year.ago : 1
+    ttl_seconds = ttl.to_f if time_based_ttl
+    expired_ttl = time_based_ttl ? EXPIRED_MONOTONIC_TIME : 1
 
     ttl_variable_name = :"@_ttl_for_#{ivar_name}"
     ttl_index_variable_name = :"@_ttl_index_for_#{ivar_name}"
@@ -76,13 +78,16 @@ module TTLMemoizeable
         return true if TTLMemoizeable.instance_variable_get(:@ttl_index) != instance_variable_get(ttl_index_variable_name)
         return true unless instance_variable_defined?(value_variable_name)
 
-        compared_to = time_based_ttl ? ttl.ago : 0
-        instance_variable_get(ttl_variable_name) <= compared_to
+        if time_based_ttl
+          Process.clock_gettime(Process::CLOCK_MONOTONIC) - instance_variable_get(ttl_variable_name) >= ttl_seconds
+        else
+          instance_variable_get(ttl_variable_name) <= 0
+        end
       end
 
       define_method extend_ttl_method_name do
         if time_based_ttl
-          instance_variable_set(ttl_variable_name, Time.current)
+          instance_variable_set(ttl_variable_name, Process.clock_gettime(Process::CLOCK_MONOTONIC))
         else
           instance_variable_set(ttl_variable_name, ttl)
         end
