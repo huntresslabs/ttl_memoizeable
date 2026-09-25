@@ -5,6 +5,16 @@ RSpec.describe TTLMemoizeable do
   after { described_class.instance_variable_set(:@disabled, false) }
 
   let(:klass) { integer_ttl_klass }
+  let(:monotonic_now) { [1_000.0] }
+
+  def travel_monotonic(duration)
+    monotonic_now[0] += duration.to_f
+  end
+
+  before do
+    allow(Process).to receive(:clock_gettime).and_call_original
+    allow(Process).to receive(:clock_gettime).with(Process::CLOCK_MONOTONIC) { monotonic_now[0] }
+  end
 
   let(:integer_ttl_klass) do
     Class.new do
@@ -109,13 +119,11 @@ RSpec.describe TTLMemoizeable do
 
     context "class method" do
       it "only calls #expensive_bar twice" do
-        freeze_time
-
         expect(Klass).to receive(:expensive_bar).and_call_original.twice
 
         61.times do
           expect(Klass.bar).to eq(1)
-          travel_to Time.current + 1.minute
+          travel_monotonic 1.minute
         end
       end
     end
@@ -129,7 +137,7 @@ RSpec.describe TTLMemoizeable do
 
         32.times do
           expect(instance.foo).to eq(2)
-          travel_to Time.current + 1.minute
+          travel_monotonic 1.minute
         end
       end
     end
@@ -210,7 +218,7 @@ RSpec.describe TTLMemoizeable do
       context "time based ttl" do
         let(:klass) { time_ttl_klass }
 
-        before { travel_to Time.current + fast_forward_time }
+        before { travel_monotonic fast_forward_time }
 
         context "ttl hasn't been exceeded" do
           let(:fast_forward_time) { 59.minutes }
@@ -254,15 +262,12 @@ RSpec.describe TTLMemoizeable do
   describe "#_extend_method_ttl" do
     subject { Klass._extend_ttl_for_bar }
 
-    before do
-      freeze_time
-      Klass.bar
-    end
+    before { Klass.bar }
 
     context "time based ttl" do
       let(:klass) { time_ttl_klass }
 
-      it { is_expected.to eq(Time.current) }
+      it { is_expected.to eq(monotonic_now[0]) }
     end
 
     context "integer based ttl" do
