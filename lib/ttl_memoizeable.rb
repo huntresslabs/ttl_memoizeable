@@ -78,7 +78,6 @@ module TTLMemoizeable
         return true if TTLMemoizeable.instance_variable_get(:@ttl_index) != instance_variable_get(ttl_index_variable_name)
         return true unless instance_variable_defined?(value_variable_name)
 
-        # Time-based TTLs store a monotonic timestamp; comparing floats avoids building a Time on every read
         if time_based_ttl
           Process.clock_gettime(Process::CLOCK_MONOTONIC) - instance_variable_get(ttl_variable_name) >= ttl_seconds
         else
